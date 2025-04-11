@@ -1,0 +1,77 @@
+import tkinter as tk
+from tkinter import messagebox
+import sqlite3
+
+# --- Database setup ---
+def init_db():
+    conn = sqlite3.connect("ambulance_booking.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bookings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            phone TEXT,
+            pickup_location TEXT,
+            destination TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# --- Booking function ---
+def book_ambulance():
+    name = entry_name.get()
+    phone = entry_phone.get()
+    pickup = entry_pickup.get()
+    destination = entry_destination.get()
+
+    if not name or not phone or not pickup or not destination:
+        messagebox.showwarning("Missing Info", "All fields are required!")
+        return
+
+    conn = sqlite3.connect("ambulance_booking.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO bookings (name, phone, pickup_location, destination) VALUES (?, ?, ?, ?)",
+                   (name, phone, pickup, destination))
+    conn.commit()
+    conn.close()
+
+    messagebox.showinfo("Success", "Ambulance booked successfully!")
+    clear_fields()
+
+# --- Clear input fields ---
+def clear_fields():
+    entry_name.delete(0, tk.END)
+    entry_phone.delete(0, tk.END)
+    entry_pickup.delete(0, tk.END)
+    entry_destination.delete(0, tk.END)
+
+# --- GUI setup ---
+root = tk.Tk()
+root.title("Ambulance Booking System")
+root.geometry("400x350")
+
+tk.Label(root, text="Ambulance Booking System", font=("Arial", 16)).pack(pady=10)
+
+tk.Label(root, text="Full Name:").pack()
+entry_name = tk.Entry(root, width=40)
+entry_name.pack()
+
+tk.Label(root, text="Phone Number:").pack()
+entry_phone = tk.Entry(root, width=40)
+entry_phone.pack()
+
+tk.Label(root, text="Pickup Location:").pack()
+entry_pickup = tk.Entry(root, width=40)
+entry_pickup.pack()
+
+tk.Label(root, text="Destination Hospital:").pack()
+entry_destination = tk.Entry(root, width=40)
+entry_destination.pack()
+
+tk.Button(root, text="Book Ambulance", command=book_ambulance, bg="green", fg="white").pack(pady=15)
+
+# Initialize the database
+init_db()
+
+root.mainloop()
